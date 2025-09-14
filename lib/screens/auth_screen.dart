@@ -36,19 +36,33 @@ class _AuthScreenState extends State<AuthScreen> {
     } finally { _busy = false; }
   }
 
-  List<double>? _embedding(Face f){
-    final lm = f.landmarks;
-    final lEye = lm[FaceLandmarkType.leftEye]?.position;
-    final rEye = lm[FaceLandmarkType.rightEye]?.position;
-    final nose = lm[FaceLandmarkType.noseBase]?.position;
-    final mouth = lm[FaceLandmarkType.bottomMouth]?.position ?? lm[FaceLandmarkType.leftMouth]?.position;
-    if (lEye==null || rEye==null || nose==null || mouth==null) return null;
-    double eyeDist = (lEye.x - rEye.x).abs();
-    double noseToMouth = (nose.y - mouth.y).abs();
-    double noseToLEye = (nose.y - lEye.y).abs();
-    double noseToREye = (nose.y - rEye.y).abs();
-    return [eyeDist, noseToMouth, noseToLEye, noseToREye];
-  }
+  List<double>? _embedding(Face f) {
+  final lm = f.landmarks;
+  final lEye = lm[FaceLandmarkType.leftEye]?.position;
+  final rEye = lm[FaceLandmarkType.rightEye]?.position;
+  final nose = lm[FaceLandmarkType.noseBase]?.position;
+  final mouth = lm[FaceLandmarkType.bottomMouth]?.position ??
+      lm[FaceLandmarkType.leftMouth]?.position;
+
+  if (lEye == null || rEye == null || nose == null || mouth == null) return null;
+
+  // Explicitly cast ints to double
+  final lEx = lEye.x.toDouble();
+  final rEx = rEye.x.toDouble();
+  final lEy = lEye.y.toDouble();
+  final rEy = rEye.y.toDouble();
+  final nX  = nose.x.toDouble();
+  final nY  = nose.y.toDouble();
+  final mY  = mouth.y.toDouble();
+
+  double eyeDist     = (lEx - rEx).abs();
+  double noseToMouth = (nY - mY).abs();
+  double noseToLEye  = (nY - lEy).abs();
+  double noseToREye  = (nY - rEy).abs();
+
+  return [eyeDist, noseToMouth, noseToLEye, noseToREye];
+}
+
 
   void _toast(String m){ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m))); }
 
