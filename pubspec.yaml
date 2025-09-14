@@ -14,7 +14,6 @@ dependencies:
   permission_handler: ^11.3.0
   shared_preferences: ^2.3.2
   audioplayers: ^6.0.0
-  vibration: ^1.8.4
 
 flutter:
   uses-material-design: true
