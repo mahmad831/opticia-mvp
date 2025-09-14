@@ -3,22 +3,27 @@ workflows:
     name: Android Debug APK
     environment:
       flutter: stable
+      java: 17
     scripts:
-      - name: Ensure Flutter project & permissions
+      - name: Prepare project
         script: |
+          echo "Working dir: $(pwd)"
           if [ ! -d "android" ]; then
-            echo "Scaffolding Flutter android/ios folders..."
-            flutter create .
+            flutter create . --platforms=android
           fi
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          echo "Patching AndroidManifest permissions..."
-          if ! grep -q 'CAMERA' "$MANIFEST"; then
-            # Insert permissions before <application> tag
-            sed -i.bak 's#<application#<uses-permission android:name="android.permission.CAMERA"/>\n<uses-permission android:name="android.permission.WAKE_LOCK"/>\n\n<application#' "$MANIFEST"
-          fi
+
+          # Ensure Gradle has enough memory
+          mkdir -p android
+          echo "org.gradle.jvmargs=-Xmx3g -Dkotlin.daemon.jvm.options=-Xmx1g" >> android/gradle.properties
+          echo "android.enableJetifier=true" >> android/gradle.properties
+          echo "android.useAndroidX=true" >> android/gradle.properties
+
+          flutter clean
           flutter pub get
-      - name: Build debug APK
+
+      - name: Build debug APK (arm64 only to reduce memory)
         script: |
-          flutter build apk --debug
+          flutter build apk --debug --target-platform=android-arm64
+
     artifacts:
       - build/app/outputs/flutter-apk/app-debug.apk
