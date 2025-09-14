@@ -1,0 +1,24 @@
+workflows:
+  android-debug:
+    name: Android Debug APK
+    environment:
+      flutter: stable
+    scripts:
+      - name: Ensure Flutter project & permissions
+        script: |
+          if [ ! -d "android" ]; then
+            echo "Scaffolding Flutter android/ios folders..."
+            flutter create .
+          fi
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          echo "Patching AndroidManifest permissions..."
+          if ! grep -q 'CAMERA' "$MANIFEST"; then
+            # Insert permissions before <application> tag
+            sed -i.bak 's#<application#<uses-permission android:name="android.permission.CAMERA"/>\n<uses-permission android:name="android.permission.WAKE_LOCK"/>\n\n<application#' "$MANIFEST"
+          fi
+          flutter pub get
+      - name: Build debug APK
+        script: |
+          flutter build apk --debug
+    artifacts:
+      - build/app/outputs/flutter-apk/app-debug.apk
